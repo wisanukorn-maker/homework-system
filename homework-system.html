@@ -1,0 +1,2099 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบรายงานฝึกอาชีพ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #dff0fb;
+    --surface: rgba(255,255,255,0.75);
+    --surface2: rgba(219,239,255,0.6);
+    --border: rgba(147,197,232,0.5);
+    --accent: #1a7fd4;
+    --accent2: #e040a0;
+    --accent3: #00b894;
+    --text: #0d2d4a;
+    --text2: #3a6b8a;
+    --text3: #7aa8c4;
+    --success: #00b894;
+    --warn: #f39c12;
+    --danger: #e74c3c;
+    --radius: 14px;
+    --shadow: 0 8px 32px rgba(30,100,160,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans Thai', sans-serif;
+    background: linear-gradient(135deg, #b8dff7 0%, #ddf0fb 35%, #e8f6ff 60%, #c5e8f5 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG decoration */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -10%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(100,180,255,0.25) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -10%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(0,160,220,0.15) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== LOGIN SCREEN ===== */
+  #login-screen {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    background: var(--bg);
+  }
+
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px;
+    width: 420px;
+    box-shadow: 0 12px 48px rgba(30,100,160,0.18), 0 0 0 1px rgba(147,197,232,0.4);
+    animation: fadeUp 0.5s ease;
+  }
+
+  .login-logo {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .login-logo .icon {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, #1a7fd4, #0ec4e0);
+    border-radius: 18px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(26,127,212,0.4);
+  }
+
+  .login-logo h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .login-logo p {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .role-tabs {
+    display: flex;
+    background: var(--surface2);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 28px;
+  }
+
+  .role-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .role-tab.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 12px rgba(108,99,255,0.4);
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus {
+    border-color: var(--accent);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #1a7fd4, #0ec4e0);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: 0 4px 16px rgba(26,127,212,0.35);
+    margin-top: 8px;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(26,127,212,0.45);
+  }
+
+  /* ===== MAIN APP ===== */
+  #app { display: none; min-height: 100vh; position: relative; z-index: 1; }
+
+  /* Sidebar */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 240px;
+    background: rgba(255,255,255,0.82);
+    border-right: 1px solid rgba(147,197,232,0.5);
+    backdrop-filter: blur(12px);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    z-index: 50;
+  }
+
+  .sidebar-logo {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 8px;
+    margin-bottom: 32px;
+  }
+
+  .sidebar-logo .icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo span {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .nav-section {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text3);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 0 8px;
+    margin-bottom: 8px;
+    margin-top: 8px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    color: var(--text2);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(26,127,212,0.12); color: var(--accent); }
+  .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .sidebar-user {
+    margin-top: auto;
+    padding: 12px;
+    background: var(--surface2);
+    border-radius: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .user-avatar {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .sidebar-user .user-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .sidebar-user .user-role {
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .logout-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+
+  .logout-btn:hover { color: var(--danger); }
+
+  /* Main content */
+  .main-content {
+    margin-left: 240px;
+    padding: 32px;
+    min-height: 100vh;
+  }
+
+  .page { display: none; animation: fadeUp 0.35s ease; }
+  .page.active { display: block; }
+
+  .page-header {
+    margin-bottom: 28px;
+  }
+
+  .page-header h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .page-header p {
+    font-size: 14px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .stat-card.c1::before { background: var(--accent); }
+  .stat-card.c2::before { background: var(--accent2); }
+  .stat-card.c3::before { background: var(--accent3); }
+  .stat-card.c4::before { background: var(--warn); }
+
+  .stat-icon {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    font-family: 'Space Mono', monospace;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* Project Cards */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .project-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(26,127,212,0.2);
+  }
+
+  .project-card .card-tag {
+    display: inline-flex; align-items: center;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  .tag-open { background: rgba(0,212,170,0.15); color: var(--success); }
+  .tag-closed { background: rgba(255,95,109,0.15); color: var(--danger); }
+  .tag-pending { background: rgba(255,179,71,0.15); color: var(--warn); }
+
+  .project-card h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .project-card .desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .project-meta {
+    display: flex; align-items: center; gap: 16px;
+    font-size: 12px;
+    color: var(--text3);
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  .project-meta span { display: flex; align-items: center; gap: 5px; }
+
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #1a7fd4, #0ec4e0);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* Submissions Table */
+  .submissions-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .section-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: between;
+    gap: 12px;
+  }
+
+  .section-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    flex: 1;
+  }
+
+  .submissions-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .submissions-table th {
+    padding: 12px 24px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .submissions-table td {
+    padding: 14px 24px;
+    font-size: 13px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .submissions-table tr:last-child td { border-bottom: none; }
+
+  .submissions-table tr:hover td { background: var(--surface2); }
+
+  .student-name {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600;
+  }
+
+  .mini-avatar {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .img-thumbs {
+    display: flex; gap: 6px;
+  }
+
+  .img-thumb {
+    width: 36px; height: 36px;
+    border-radius: 7px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: transform 0.2s;
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    overflow: hidden;
+  }
+
+  .img-thumb:hover { transform: scale(1.1); border-color: var(--accent); }
+
+  .more-imgs {
+    width: 36px; height: 36px;
+    border-radius: 7px;
+    background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text2);
+    cursor: pointer;
+  }
+
+  /* Forms */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .form-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-row.full { grid-template-columns: 1fr; }
+
+  .field-label {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .field-input, .field-textarea, .field-select {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field-input:focus, .field-textarea:focus, .field-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(26,127,212,0.15);
+  }
+
+  .field-textarea { min-height: 100px; resize: vertical; }
+
+  .field-select option { background: var(--surface2); }
+
+  /* Image upload zone */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface2);
+  }
+
+  .upload-zone:hover, .upload-zone.dragging {
+    border-color: var(--accent);
+    background: rgba(108,99,255,0.05);
+  }
+
+  .upload-zone .upload-icon { font-size: 32px; margin-bottom: 8px; }
+  .upload-zone p { font-size: 14px; color: var(--text2); }
+  .upload-zone span { font-size: 12px; color: var(--text3); }
+  .upload-zone input { display: none; }
+
+  .uploaded-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .uploaded-img-wrap {
+    position: relative;
+    width: 90px; height: 90px;
+  }
+
+  .uploaded-img {
+    width: 90px; height: 90px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+  }
+
+  .remove-img {
+    position: absolute;
+    top: -6px; right: -6px;
+    width: 22px; height: 22px;
+    background: var(--danger);
+    border: 2px solid var(--bg);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    cursor: pointer;
+    color: white;
+    font-weight: 700;
+  }
+
+  /* Buttons */
+  .btn-row {
+    display: flex; gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  .btn {
+    padding: 11px 24px;
+    border-radius: 10px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { background: var(--border); color: var(--text); }
+
+  .btn-success {
+    background: var(--success);
+    color: var(--bg);
+    box-shadow: 0 4px 16px rgba(0,212,170,0.3);
+  }
+
+  .btn-success:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,212,170,0.4); }
+
+  .btn-accent {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 16px rgba(26,127,212,0.3);
+  }
+
+  .btn-accent:hover { transform: translateY(-1px); }
+
+  .btn-danger {
+    background: rgba(255,95,109,0.15);
+    color: var(--danger);
+    border: 1px solid rgba(255,95,109,0.3);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: fadeUp 0.3s ease;
+    box-shadow: var(--shadow);
+  }
+
+  .modal-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .modal-header h3 {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  .modal-close {
+    background: var(--surface2);
+    border: none;
+    color: var(--text2);
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-left: 12px;
+    transition: all 0.2s;
+  }
+
+  .modal-close:hover { background: var(--danger); color: white; }
+
+  /* Image lightbox */
+  .lightbox {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 10px; }
+  .lightbox-close {
+    position: absolute; top: 20px; right: 20px;
+    background: rgba(255,255,255,0.15);
+    border: none; color: white;
+    width: 40px; height: 40px; border-radius: 10px;
+    cursor: pointer; font-size: 18px;
+  }
+
+  /* Toast */
+  .toast-container {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    z-index: 500;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  .toast {
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+    animation: slideIn 0.3s ease;
+    box-shadow: var(--shadow);
+    min-width: 280px;
+  }
+
+  .toast-success { background: var(--success); color: var(--bg); }
+  .toast-error { background: var(--danger); color: white; }
+  .toast-info { background: var(--accent); color: white; }
+
+  /* Misc */
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 15px; }
+  .empty-state span { font-size: 13px; color: var(--text3); }
+
+  .chip {
+    display: inline-flex; align-items: center;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    background: var(--surface2);
+    gap: 6px;
+  }
+
+  .chip.active {
+    background: rgba(26,127,212,0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .filter-row {
+    display: flex; gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .colors = ['#6c63ff','#ff6b9d','#00d4aa','#ffb347','#5eead4','#f472b6'];
+
+  .view-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Noto Sans Thai', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .view-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .detail-item { }
+  .detail-item .d-label { font-size: 11px; color: var(--text3); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .detail-item .d-value { font-size: 14px; color: var(--text); font-weight: 500; }
+
+  .submission-note {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .imgs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+
+  .imgs-grid-item {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    transition: border-color 0.2s;
+  }
+
+  .imgs-grid-item:hover { border-color: var(--accent); }
+  .imgs-grid-item img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* input date color fix */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.7);
+    cursor: pointer;
+  }
+
+  .search-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 14px;
+    color: var(--text);
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 13px;
+    outline: none;
+    width: 220px;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus { border-color: var(--accent); }
+
+  .section-header { justify-content: space-between; }
+
+  /* Mobile responsive */
+  @media (max-width: 900px) {
+    .sidebar { width: 60px; padding: 16px 8px; }
+    .sidebar-logo span, .nav-item span, .nav-section, .sidebar-user .user-name, .sidebar-user .user-role { display: none; }
+    .nav-item { justify-content: center; padding: 12px; }
+    .sidebar-logo { justify-content: center; }
+    .sidebar-user { justify-content: center; }
+    .main-content { margin-left: 60px; padding: 20px 16px; }
+    .stats-grid { grid-template-columns: repeat(2,1fr); }
+    .form-row { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="global-loader" style="display:none; position:fixed; inset:0; background:rgba(180,220,245,0.92); z-index:999; align-items:center; justify-content:center; flex-direction:column; gap:16px;">
+  <div style="width:48px;height:48px;border:4px solid rgba(147,197,232,0.5);border-top-color:#1a7fd4;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <div style="color:#1a7fd4;font-size:14px;font-weight:600;">กำลังโหลด...</div>
+</div>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="icon">📚</div>
+      <h1>ระบบรายงานฝึกอาชีพ</h1>
+      <p>Assignment Submission System</p>
+    </div>
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="selectRole('teacher')">👩‍🏫 ครู</button>
+      <button class="role-tab" onclick="selectRole('student')">🎒 นักเรียน</button>
+    </div>
+    <!-- Student ID field (shown for students) -->
+    <div class="form-group" id="student-id-field" style="display:none;">
+      <label>เลขบัตรประจำตัวนักเรียน 🪪</label>
+      <input type="text" id="login-student-id" placeholder="กรอกเลข 11 หลัก" maxlength="11"
+        oninput="this.value=this.value.replace(/[^0-9]/,'')"
+        onkeydown="if(event.key==='Enter') document.getElementById('login-name').focus()" />
+    </div>
+    <div class="form-group">
+      <label id="login-name-label">ชื่อจริง (ไม่ต้องมีคำนำหน้า)</label>
+      <input type="text" id="login-name" placeholder="เช่น กัญยาณี" onkeydown="if(event.key==='Enter') doLogin()" />
+      <div id="student-verify-msg" style="display:none; margin-top:6px; font-size:12px;"></div>
+    </div>
+    <div class="form-group" id="password-field">
+      <label>รหัสผ่านครู 🔒</label>
+      <div style="position:relative;">
+        <input type="password" id="login-password" placeholder="กรอกรหัสผ่าน" onkeydown="if(event.key==='Enter') doLogin()"
+          style="width:100%; padding:12px 44px 12px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:'Noto Sans Thai',sans-serif; font-size:14px; outline:none; transition:border-color 0.2s;" />
+        <button onclick="togglePwVis()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3);" id="pw-eye">👁️</button>
+      </div>
+      <div id="lockout-msg" style="display:none; margin-top:8px; color:var(--danger); font-size:12px; text-align:center;"></div>
+      <div id="attempts-msg" style="display:none; margin-top:6px; font-size:12px; text-align:center; color:var(--warn);"></div>
+    </div>
+    <button class="btn-primary" id="login-btn" onclick="doLogin()">เข้าสู่ระบบ →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="icon">📚</div>
+      <span>รายงานฝึกอาชีพ</span>
+    </div>
+
+    <!-- Teacher Nav -->
+    <div id="teacher-nav" style="display:none; flex:1; flex-direction:column;">
+      <div class="nav-section">เมนู</div>
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <span class="nav-icon">📊</span><span>Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showPage('projects')">
+        <span class="nav-icon">📁</span><span>โปรเจกต์ทั้งหมด</span>
+      </div>
+      <div class="nav-item" onclick="showPage('create-project')">
+        <span class="nav-icon">➕</span><span>สร้างโปรเจกต์</span>
+      </div>
+      <div class="nav-item" onclick="showPage('all-submissions')">
+        <span class="nav-icon">📥</span><span>งานที่ส่งมา</span>
+      </div>
+    </div>
+
+    <!-- Student Nav -->
+    <div id="student-nav" style="display:none; flex:1; flex-direction:column;">
+      <div class="nav-section">เมนู</div>
+      <div class="nav-item active" onclick="showPage('student-dashboard')">
+        <span class="nav-icon">🏠</span><span>หน้าหลัก</span>
+      </div>
+      <div class="nav-item" onclick="showPage('submit-work')">
+        <span class="nav-icon">📤</span><span>รายงานฝึกอาชีพ</span>
+      </div>
+      <div class="nav-item" onclick="showPage('my-submissions')">
+        <span class="nav-icon">📋</span><span>งานของฉัน</span>
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebar-avatar" style="background: linear-gradient(135deg, #6c63ff, #8b5cf6);">👤</div>
+      <div>
+        <div class="user-name" id="sidebar-name">-</div>
+        <div class="user-role" id="sidebar-role">-</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()" title="ออกจากระบบ">⏻</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-content">
+
+    <!-- TEACHER: Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h2>📊 Dashboard</h2>
+        <p>ภาพรวมของงานและโปรเจกต์ทั้งหมด</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card c1">
+          <div class="stat-icon">📁</div>
+          <div class="stat-value" id="stat-projects">0</div>
+          <div class="stat-label">โปรเจกต์ทั้งหมด</div>
+        </div>
+        <div class="stat-card c2">
+          <div class="stat-icon">📥</div>
+          <div class="stat-value" id="stat-submissions">0</div>
+          <div class="stat-label">งานที่ส่งมาแล้ว</div>
+        </div>
+        <div class="stat-card c3">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value" id="stat-students">0</div>
+          <div class="stat-label">นักเรียนทั้งหมด</div>
+        </div>
+        <div class="stat-card c4">
+          <div class="stat-icon">📅</div>
+          <div class="stat-value" id="stat-open">0</div>
+          <div class="stat-label">โปรเจกต์ที่เปิดอยู่</div>
+        </div>
+      </div>
+
+      <div class="submissions-section">
+        <div class="section-header">
+          <h3>📥 งานล่าสุดที่ส่งมา</h3>
+        </div>
+        <div id="recent-submissions-body">
+          <div class="empty-state"><div class="empty-icon">📭</div><p>ยังไม่มีงานส่งมา</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEACHER: Projects -->
+    <div class="page" id="page-projects">
+      <div class="page-header">
+        <h2>📁 โปรเจกต์ทั้งหมด</h2>
+        <p>จัดการโปรเจกต์และติดตามการส่งรายงาน</p>
+      </div>
+      <div class="filter-row">
+        <div class="chip active" onclick="filterProjects('all', this)">ทั้งหมด</div>
+        <div class="chip" onclick="filterProjects('open', this)">🟢 เปิดอยู่</div>
+        <div class="chip" onclick="filterProjects('closed', this)">🔴 ปิดแล้ว</div>
+      </div>
+      <div class="projects-grid" id="teacher-projects-grid">
+        <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📁</div><p>ยังไม่มีโปรเจกต์</p><span>กดสร้างโปรเจกต์ใหม่</span></div>
+      </div>
+    </div>
+
+    <!-- TEACHER: Create Project -->
+    <div class="page" id="page-create-project">
+      <div class="page-header">
+        <h2>➕ สร้างโปรเจกต์ใหม่</h2>
+        <p>กำหนดรายละเอียดของงานที่ต้องการให้นักเรียนส่ง</p>
+      </div>
+      <div class="form-card">
+        <h3>📝 ข้อมูลโปรเจกต์</h3>
+        <div class="form-row">
+          <div>
+            <label class="field-label">ชื่อโปรเจกต์ *</label>
+            <input class="field-input" id="new-proj-title" placeholder="เช่น รายงานวิทยาศาสตร์ บทที่ 3" />
+          </div>
+          <div>
+            <label class="field-label">วิชา</label>
+            <input class="field-input" id="new-proj-subject" placeholder="เช่น วิทยาศาสตร์" />
+          </div>
+        </div>
+        <div class="form-row full">
+          <div>
+            <label class="field-label">คำอธิบายงาน</label>
+            <textarea class="field-textarea" id="new-proj-desc" placeholder="อธิบายรายละเอียดของงาน..."></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label class="field-label">วันกำหนดส่ง</label>
+            <input class="field-input" type="date" id="new-proj-due" />
+          </div>
+          <div>
+            <label class="field-label">ระดับชั้น / ห้องเรียน</label>
+            <input class="field-input" id="new-proj-class" placeholder="เช่น ม.3 ทุกห้อง" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="showPage('projects')">ยกเลิก</button>
+          <button class="btn btn-success" onclick="createProject()">✓ สร้างโปรเจกต์</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEACHER: All Submissions -->
+    <div class="page" id="page-all-submissions">
+      <div class="page-header">
+        <h2>📥 งานที่ส่งมาทั้งหมด</h2>
+        <p>ดูและจัดการงานของนักเรียนทั้งหมด</p>
+      </div>
+      <div class="filter-row">
+        <input class="search-input" id="search-submissions" placeholder="🔍 ค้นหาชื่อนักเรียน..." oninput="renderAllSubmissions()" />
+        <select class="field-select" id="filter-project" onchange="renderAllSubmissions()" style="width:auto; padding: 9px 14px;">
+          <option value="">ทุกโปรเจกต์</option>
+        </select>
+      </div>
+      <div class="submissions-section">
+        <table class="submissions-table" id="all-submissions-table">
+          <thead>
+            <tr>
+              <th>นักเรียน</th>
+              <th>โปรเจกต์</th>
+              <th>วันที่ส่งงาน</th>
+              <th>ข้อความ</th>
+              <th>รูปภาพ</th>
+              <th>รายละเอียด</th>
+            </tr>
+          </thead>
+          <tbody id="all-submissions-tbody">
+            <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div><p>ยังไม่มีงาน</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STUDENT: Dashboard -->
+    <div class="page" id="page-student-dashboard">
+      <div class="page-header">
+        <h2 id="student-greeting">👋 สวัสดี!</h2>
+        <p>เช็คงานที่ต้องส่ง และดูงานที่ส่งไปแล้ว</p>
+      </div>
+      <div class="stats-grid" style="grid-template-columns: repeat(3,1fr)">
+        <div class="stat-card c1">
+          <div class="stat-icon">📁</div>
+          <div class="stat-value" id="s-stat-open">0</div>
+          <div class="stat-label">งานที่ต้องส่ง</div>
+        </div>
+        <div class="stat-card c3">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="s-stat-done">0</div>
+          <div class="stat-label">ส่งแล้ว</div>
+        </div>
+        <div class="stat-card c4">
+          <div class="stat-icon">⏰</div>
+          <div class="stat-value" id="s-stat-due">-</div>
+          <div class="stat-label">กำหนดส่งใกล้สุด</div>
+        </div>
+      </div>
+
+      <div class="projects-grid" id="student-projects-grid">
+        <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🎉</div><p>ยังไม่มีโปรเจกต์</p><span>รอครูสร้างโปรเจกต์</span></div>
+      </div>
+    </div>
+
+    <!-- STUDENT: Submit Work -->
+    <div class="page" id="page-submit-work">
+      <div class="page-header">
+        <h2>📤 รายงานฝึกอาชีพ</h2>
+        <p>เลือกโปรเจกต์และกรอกข้อมูลการส่งรายงาน</p>
+      </div>
+      <div class="form-card">
+        <h3>📝 ข้อมูลการส่งรายงาน</h3>
+        <div class="form-row full">
+          <div>
+            <label class="field-label">เลือกโปรเจกต์ *</label>
+            <select class="field-select" id="submit-project">
+              <option value="">-- เลือกโปรเจกต์ --</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label class="field-label">วันที่ทำงาน</label>
+            <input class="field-input" type="date" id="submit-date" />
+          </div>
+          <div>
+            <label class="field-label">ชื่อ-นามสกุล</label>
+            <input class="field-input" id="submit-student" placeholder="ชื่อของคุณ" readonly />
+          </div>
+        </div>
+        <div class="form-row full">
+          <div>
+            <label class="field-label">ข้อความ / รายละเอียด</label>
+            <textarea class="field-textarea" id="submit-note" placeholder="อธิบายสิ่งที่คุณทำ..."></textarea>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div>
+            <label class="field-label">แนบรูปภาพ (เลือกได้หลายรูป)</label>
+            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('img-upload').click()"
+              ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('dragging')">
+              <input type="file" id="img-upload" accept="image/*" multiple onchange="handleImgUpload(event)">
+              <div class="upload-icon">🖼️</div>
+              <p>คลิกหรือลากรูปภาพมาวางที่นี่</p>
+              <span>รองรับ JPG, PNG, GIF (หลายรูป)</span>
+            </div>
+            <div class="uploaded-images" id="uploaded-images"></div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="clearSubmitForm()">ล้างข้อมูล</button>
+          <button class="btn btn-success" onclick="submitWork()">📤 รายงานฝึกอาชีพ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDENT: My Submissions -->
+    <div class="page" id="page-my-submissions">
+      <div class="page-header">
+        <h2>📋 งานของฉัน</h2>
+        <p>ดูงานที่ส่งไปแล้วทั้งหมด</p>
+      </div>
+      <div class="submissions-section">
+        <table class="submissions-table">
+          <thead>
+            <tr>
+              <th>โปรเจกต์</th>
+              <th>วันที่ส่งงาน</th>
+              <th>ข้อความ</th>
+              <th>รูปภาพ</th>
+              <th>รายละเอียด</th>
+            </tr>
+          </thead>
+          <tbody id="my-submissions-tbody">
+            <tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📭</div><p>ยังไม่มีงานที่ส่ง</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-project-detail">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-proj-title">-</h3>
+      <button class="modal-close" onclick="closeModal('modal-project-detail')">✕</button>
+    </div>
+    <div id="modal-proj-content"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-submission-detail">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>📄 รายละเอียดการส่งรายงาน</h3>
+      <button class="modal-close" onclick="closeModal('modal-submission-detail')">✕</button>
+    </div>
+    <div id="modal-sub-content"></div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ========== CONFIG ==========
+// ตั้งค่า: ใส่ URL Apps Script หรือปล่อยว่างไว้เพื่อใช้ localStorage
+const API_URL = "https://script.google.com/macros/s/AKfycbwNMJhll2wuB1g3EX4mKqFOtBzNCfuuKNDYXHlfK1tvCfPnVDy0AMZpLjYLpL91o54HJQ/exec"; // Apps Script URL
+
+// ========== DATA STORE ==========
+let state = {
+  currentUser: null,
+  currentRole: 'teacher',
+  projects: [],
+  submissions: [],
+  uploadedImgs: [],
+  filterProject: 'all',
+  loading: false
+};
+
+// ========== MODE: localStorage fallback ==========
+const USE_LOCAL = !API_URL || API_URL === "YOUR_APPS_SCRIPT_URL_HERE";
+
+function lsLoad() {
+  try {
+    const d = JSON.parse(localStorage.getItem('report-system-v1') || '{}');
+    state.projects   = (d.projects   || []).map(p => ({ ...p, status: p.status || 'open' }));
+    state.submissions = (d.submissions || []).map(s => ({
+      ...s,
+      images: s.images || []
+    }));
+  } catch(e) {}
+}
+
+function lsSave() {
+  const toSave = {
+    projects:    state.projects,
+    submissions: state.submissions.map(s => ({
+      ...s,
+      // ลดขนาด: เก็บ base64 ไม่เกิน 10 รูปต่องาน
+      images: (s.images || []).slice(0, 10)
+    }))
+  };
+  try { localStorage.setItem('report-system-v1', JSON.stringify(toSave)); } catch(e) {
+    showToast('⚠️ พื้นที่เก็บข้อมูลเต็ม ลองลดจำนวนรูปภาพ', 'warn');
+  }
+}
+
+// ========== API CALLS ==========
+async function apiGet(action) {
+  if (USE_LOCAL) throw new Error('ไม่ได้ตั้งค่า API_URL');
+  let res, text;
+  try {
+    res  = await fetch(`${API_URL}?action=${action}`);
+    text = await res.text();
+  } catch(e) {
+    throw new Error('เชื่อมต่อ Apps Script ไม่ได้ — ตรวจสอบ URL และการ Deploy');
+  }
+  try {
+    const json = JSON.parse(text);
+    if (!json.success) throw new Error(json.error);
+    return json.data;
+  } catch(e) {
+    throw new Error('Apps Script ตอบกลับไม่ถูกต้อง — ตรวจสอบ URL และการ Deploy อีกครั้ง');
+  }
+}
+
+async function apiPost(action, data) {
+  if (USE_LOCAL) throw new Error('ไม่ได้ตั้งค่า API_URL');
+  // ใช้ GET แทน POST เพื่อหลีกเลี่ยง CORS
+  const url = API_URL + '?action=' + encodeURIComponent(action)
+            + '&data=' + encodeURIComponent(JSON.stringify(data));
+  let res, text;
+  try {
+    res  = await fetch(url);
+    text = await res.text();
+  } catch(e) {
+    throw new Error('เชื่อมต่อ Apps Script ไม่ได้ — ตรวจสอบ URL และการ Deploy');
+  }
+  try {
+    const json = JSON.parse(text);
+    if (!json.success) throw new Error(json.error);
+    return json.data;
+  } catch(e) {
+    throw new Error('Apps Script ตอบกลับไม่ถูกต้อง — ตรวจสอบ URL และการ Deploy อีกครั้ง');
+  }
+}
+
+async function loadState() {
+  if (USE_LOCAL) {
+    lsLoad();
+    return;
+  }
+  try {
+    showLoading(true);
+    const [projects, submissions] = await Promise.all([
+      apiGet('getProjects'),
+      apiGet('getSubmissions')
+    ]);
+    state.projects = projects.map(p => ({ ...p, status: p.status || 'open' }));
+    state.submissions = submissions.map(s => ({
+      ...s,
+      images: s.imageUrls ? s.imageUrls.split(',').filter(Boolean).map(url => ({ data: url, isUrl: true })) : []
+    }));
+  } catch(e) {
+    showToast('⚠️ ' + e.message, 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+function showLoading(on) {
+  state.loading = on;
+  document.getElementById('global-loader').style.display = on ? 'flex' : 'none';
+}
+
+function saveState() {
+  if (USE_LOCAL) lsSave();
+  // ถ้าใช้ Apps Script — ข้อมูลถูก save ที่ server แล้วในแต่ละ action
+}
+
+// ========== LOGIN ==========
+let selectedRole = 'teacher';
+
+function selectRole(r) {
+  selectedRole = r;
+  document.querySelectorAll('.role-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && r==='teacher') || (i===1 && r==='student'));
+  });
+  document.getElementById('password-field').style.display = r === 'teacher' ? 'block' : 'none';
+  document.getElementById('student-id-field').style.display = r === 'student' ? 'block' : 'none';
+  document.getElementById('login-name-label').textContent = r === 'student'
+    ? 'ชื่อจริง (ไม่ต้องมีคำนำหน้า) *'
+    : 'ชื่อผู้ใช้';
+  document.getElementById('login-name').placeholder = r === 'student' ? 'เช่น กัญยาณี' : 'กรอกชื่อของคุณ';
+  document.getElementById('student-verify-msg').style.display = 'none';
+}
+
+// ===== STUDENT DATABASE =====
+const STUDENTS = [
+  { id: "68301270001", firstname: "นางสาวกัญยาณี", lastname: "ภู่ปาน", fullname: "นางสาวกัญยาณี ภู่ปาน" },
+  { id: "68301270002", firstname: "นายเกรียงศักดิ์", lastname: "ปิงยศ", fullname: "นายเกรียงศักดิ์ ปิงยศ" },
+  { id: "68301270003", firstname: "นายณรงค์พร", lastname: "นามศรี", fullname: "นายณรงค์พร นามศรี" },
+  { id: "68301270004", firstname: "นายณัฐพงษ์", lastname: "ไชยแสง", fullname: "นายณัฐพงษ์ ไชยแสง" },
+  { id: "68301270005", firstname: "นายเทียนป้อ", lastname: "สังขารา", fullname: "นายเทียนป้อ สังขารา" },
+  { id: "68301270007", firstname: "นายปรเมศร์", lastname: "หาวารีย์", fullname: "นายปรเมศร์ หาวารีย์" },
+  { id: "68301270008", firstname: "นายพฤกษ์", lastname: "ขัดสี", fullname: "นายพฤกษ์ ขัดสี" },
+  { id: "68301270009", firstname: "นายพศวัต", lastname: "เพ็ชรเกิด", fullname: "นายพศวัต เพ็ชรเกิด" },
+  { id: "68301270010", firstname: "นางสาวพัชรศรี", lastname: "เกิดบ้านใหม่", fullname: "นางสาวพัชรศรี เกิดบ้านใหม่" },
+  { id: "68301270011", firstname: "นายวสันต์", lastname: "ดีคำ", fullname: "นายวสันต์ ดีคำ" },
+  { id: "68301270012", firstname: "นายสุรชัย", lastname: "สุขสวัสดิ์", fullname: "นายสุรชัย สุขสวัสดิ์" },
+  { id: "68301270013", firstname: "นายอภิเดช", lastname: "ปล้องขัน", fullname: "นายอภิเดช ปล้องขัน" },
+  { id: "68301270014", firstname: "นายอานนท์", lastname: "ใยแก่นจันทร์", fullname: "นายอานนท์ ใยแก่นจันทร์" },
+  { id: "68301270015", firstname: "นายใอศวรรค์", lastname: "อินทรา", fullname: "นายใอศวรรค์ อินทรา" },
+  { id: "68301270017", firstname: "นายอภินัทธ์", lastname: "แก่นทอง", fullname: "นายอภินัทธ์ แก่นทอง" }
+];
+
+function findStudent(studentId, firstname) {
+  const sid = studentId.trim();
+  const fn  = firstname.trim();
+  return STUDENTS.find(s =>
+    s.id === sid &&
+    (s.firstname === fn || s.firstname.includes(fn) || fn.includes(s.firstname.replace(/^(นาย|นางสาว|นาง)/,'')))
+  ) || null;
+}
+
+// ===== PASSWORD CONFIG =====
+// เปลี่ยนรหัสผ่านครูได้ที่นี่
+const TEACHER_PASSWORD = "1234";
+const MAX_ATTEMPTS = 3;
+const LOCKOUT_SECONDS = 30;
+let loginAttempts = 0;
+let lockedUntil = null;
+
+function togglePwVis() {
+  const inp = document.getElementById('login-password');
+  const eye = document.getElementById('pw-eye');
+  if (inp.type === 'password') { inp.type = 'text'; eye.textContent = '🙈'; }
+  else { inp.type = 'password'; eye.textContent = '👁️'; }
+}
+
+async function doLogin() {
+  const name = document.getElementById('login-name').value.trim();
+  if (!name) { showToast('กรุณากรอกชื่อ', 'error'); return; }
+
+  // Check teacher password
+  if (selectedRole === 'teacher') {
+    // Check lockout
+    if (lockedUntil && Date.now() < lockedUntil) {
+      const secs = Math.ceil((lockedUntil - Date.now()) / 1000);
+      document.getElementById('lockout-msg').style.display = 'block';
+      document.getElementById('lockout-msg').textContent = `⛔ ถูกล็อก กรุณารอ ${secs} วินาที`;
+      return;
+    }
+
+    const pw = document.getElementById('login-password').value;
+    if (!pw) { showToast('กรุณากรอกรหัสผ่าน', 'error'); return; }
+
+    if (pw !== TEACHER_PASSWORD) {
+      loginAttempts++;
+      const remaining = MAX_ATTEMPTS - loginAttempts;
+      if (loginAttempts >= MAX_ATTEMPTS) {
+        lockedUntil = Date.now() + LOCKOUT_SECONDS * 1000;
+        loginAttempts = 0;
+        document.getElementById('lockout-msg').style.display = 'block';
+        document.getElementById('lockout-msg').textContent = `⛔ กรอกผิดครบ ${MAX_ATTEMPTS} ครั้ง ถูกล็อก ${LOCKOUT_SECONDS} วินาที`;
+        document.getElementById('attempts-msg').style.display = 'none';
+        document.getElementById('login-password').value = '';
+        // Start countdown
+        const timer = setInterval(() => {
+          if (!lockedUntil || Date.now() >= lockedUntil) {
+            clearInterval(timer);
+            document.getElementById('lockout-msg').style.display = 'none';
+            document.getElementById('login-btn').disabled = false;
+          } else {
+            const s = Math.ceil((lockedUntil - Date.now()) / 1000);
+            document.getElementById('lockout-msg').textContent = `⛔ ถูกล็อก กรุณารอ ${s} วินาที`;
+          }
+        }, 1000);
+      } else {
+        document.getElementById('attempts-msg').style.display = 'block';
+        document.getElementById('attempts-msg').textContent = `❌ รหัสผ่านไม่ถูกต้อง (เหลืออีก ${remaining} ครั้ง)`;
+        document.getElementById('login-password').value = '';
+        document.getElementById('login-password').focus();
+      }
+      return;
+    }
+    // Correct — reset counter
+    loginAttempts = 0;
+    lockedUntil = null;
+    document.getElementById('lockout-msg').style.display = 'none';
+    document.getElementById('attempts-msg').style.display = 'none';
+  }
+
+  // Student verification
+  if (selectedRole === 'student') {
+    const sid = document.getElementById('login-student-id').value.trim();
+    if (!sid) { showToast('กรุณากรอกเลขบัตรประจำตัว', 'error'); return; }
+    if (!/^\d{11}$/.test(sid)) { showToast('เลขบัตรต้องมี 11 หลัก', 'error'); return; }
+
+    const student = findStudent(sid, name);
+    if (!student) {
+      const msg = document.getElementById('student-verify-msg');
+      msg.style.display = 'block';
+      msg.style.color = 'var(--danger)';
+      msg.textContent = '❌ ไม่พบข้อมูล — กรุณาตรวจสอบเลขบัตรและชื่อจริง';
+      document.getElementById('login-student-id').focus();
+      return;
+    }
+    // Use full name from DB
+    state.currentUser = student.fullname;
+    state.studentId   = student.id;
+  } else {
+    state.currentUser = name;
+  }
+  state.currentRole = selectedRole;
+
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  // Sidebar
+  document.getElementById('sidebar-name').textContent = name;
+  document.getElementById('sidebar-role').textContent = selectedRole === 'teacher' ? '👩‍🏫 ครู' : '🎒 นักเรียน';
+  document.getElementById('sidebar-avatar').textContent = name[0].toUpperCase();
+
+  const colors = ['#6c63ff','#ff6b9d','#00d4aa','#ffb347','#5eead4','#f472b6'];
+  document.getElementById('sidebar-avatar').style.background = `linear-gradient(135deg, ${colors[Math.floor(Math.random()*colors.length)]}, #0ec4e0)`;
+
+  if (selectedRole === 'teacher') {
+    document.getElementById('teacher-nav').style.display = 'flex';
+    document.getElementById('student-nav').style.display = 'none';
+    showPage('dashboard');
+  } else {
+    document.getElementById('teacher-nav').style.display = 'none';
+    document.getElementById('student-nav').style.display = 'flex';
+    document.getElementById('student-greeting').textContent = `👋 สวัสดี, ${name}!`;
+    document.getElementById('submit-student').value = name;
+    showPage('student-dashboard');
+  }
+
+  await loadState();
+  refreshAll();
+}
+
+function doLogout() {
+  state.currentUser = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-name').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-student-id').value = '';
+  document.getElementById('student-verify-msg').style.display = 'none';
+  document.getElementById('attempts-msg').style.display = 'none';
+  document.getElementById('lockout-msg').style.display = 'none';
+  loginAttempts = 0; lockedUntil = null;
+}
+
+// ========== NAVIGATION ==========
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  // Map page to nav
+  const map = {
+    'dashboard': 0, 'projects': 1, 'create-project': 2, 'all-submissions': 3,
+    'student-dashboard': 0, 'submit-work': 1, 'my-submissions': 2
+  };
+  const items = document.querySelectorAll(state.currentRole === 'teacher' ? '#teacher-nav .nav-item' : '#student-nav .nav-item');
+  if (map[id] !== undefined && items[map[id]]) items[map[id]].classList.add('active');
+
+  // Refresh on open
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'projects') renderTeacherProjects();
+  if (id === 'all-submissions') renderAllSubmissions();
+  if (id === 'student-dashboard') renderStudentDashboard();
+  if (id === 'submit-work') renderSubmitForm();
+  if (id === 'my-submissions') renderMySubmissions();
+}
+
+// ========== TEACHER: CREATE PROJECT ==========
+async function createProject() {
+  const title = document.getElementById('new-proj-title').value.trim();
+  if (!title) { showToast('กรุณากรอกชื่อโปรเจกต์', 'error'); return; }
+
+  const data = {
+    title,
+    subject: document.getElementById('new-proj-subject').value.trim(),
+    desc: document.getElementById('new-proj-desc').value.trim(),
+    due: document.getElementById('new-proj-due').value,
+    classGroup: document.getElementById('new-proj-class').value.trim(),
+    createdBy: state.currentUser
+  };
+
+  try {
+    showLoading(true);
+    let result = { id: Date.now().toString() };
+    if (!USE_LOCAL) result = await apiPost('createProject', data);
+    state.projects.push({ ...data, id: result.id, createdAt: new Date().toISOString(), status: 'open' });
+    ['new-proj-title','new-proj-subject','new-proj-desc','new-proj-due','new-proj-class'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    saveState();
+    showToast('✅ สร้างโปรเจกต์สำเร็จ!', 'success');
+    showPage('projects');
+  } catch(e) {
+    showToast('❌ สร้างไม่ได้: ' + e.message, 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+// ========== TEACHER: DASHBOARD ==========
+function renderDashboard() {
+  const subs = state.submissions;
+  const projs = state.projects;
+  const students = [...new Set(subs.map(s => s.studentName))];
+
+  document.getElementById('stat-projects').textContent = projs.length;
+  document.getElementById('stat-submissions').textContent = subs.length;
+  document.getElementById('stat-students').textContent = students.length;
+  document.getElementById('stat-open').textContent = projs.filter(p => p.status === 'open').length;
+
+  const recent = [...subs].sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt)).slice(0, 8);
+
+  const el = document.getElementById('recent-submissions-body');
+  if (!recent.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>ยังไม่มีงานส่งมา</p></div>`;
+    return;
+  }
+
+  el.innerHTML = `<table class="submissions-table"><thead><tr>
+    <th>นักเรียน</th><th>โปรเจกต์</th><th>วันที่ส่ง</th><th>รูปภาพ</th><th></th>
+  </tr></thead><tbody>` + recent.map(s => {
+    const proj = state.projects.find(p => p.id === s.projectId);
+    return `<tr>
+      <td><div class="student-name">${avatarHtml(s.studentName)} ${s.studentName}</div></td>
+      <td><span style="color:var(--text2)">${proj?.title || '-'}</span></td>
+      <td style="font-family:'Space Mono',monospace; font-size:12px;">${formatDate(s.workDate)}</td>
+      <td>${thumbsHtml(s.images, 3)}</td>
+      <td><button class="view-btn" onclick="showSubmissionDetail('${s.id}')">ดูรายละเอียด</button></td>
+    </tr>`;
+  }).join('') + `</tbody></table>`;
+}
+
+// ========== TEACHER: PROJECTS ==========
+let projFilter = 'all';
+function filterProjects(f, el) {
+  projFilter = f;
+  document.querySelectorAll('.filter-row .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderTeacherProjects();
+}
+
+function renderTeacherProjects() {
+  let projs = state.projects;
+  if (projFilter !== 'all') projs = projs.filter(p => p.status === projFilter);
+
+  const grid = document.getElementById('teacher-projects-grid');
+  if (!projs.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📁</div><p>ยังไม่มีโปรเจกต์</p><span>กดสร้างโปรเจกต์ใหม่</span></div>`;
+    return;
+  }
+
+  grid.innerHTML = projs.map(p => {
+    const subs = state.submissions.filter(s => s.projectId === p.id);
+    return `<div class="project-card" onclick="showProjectDetail('${p.id}')">
+      <div class="card-tag ${p.status==='open'?'tag-open':'tag-closed'}">${p.status==='open'?'🟢 เปิดอยู่':'🔴 ปิดแล้ว'}</div>
+      <h3>${p.title}</h3>
+      <div class="desc">${p.desc || 'ไม่มีคำอธิบาย'}</div>
+      <div class="project-meta">
+        <span>📚 ${p.subject || '-'}</span>
+        <span>📥 ${subs.length} งาน</span>
+        ${p.due ? `<span>📅 ${formatDate(p.due)}</span>` : ''}
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width: ${Math.min(100, subs.length * 10)}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ========== TEACHER: ALL SUBMISSIONS ==========
+function renderAllSubmissions() {
+  const search = (document.getElementById('search-submissions')?.value || '').toLowerCase();
+  const projFilter2 = document.getElementById('filter-project')?.value || '';
+
+  // Populate filter dropdown
+  const sel = document.getElementById('filter-project');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">ทุกโปรเจกต์</option>' + state.projects.map(p =>
+    `<option value="${p.id}">${p.title}</option>`).join('');
+  sel.value = cur;
+
+  let subs = state.submissions;
+  if (search) subs = subs.filter(s => s.studentName.toLowerCase().includes(search));
+  if (projFilter2) subs = subs.filter(s => s.projectId === projFilter2);
+  subs = [...subs].sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+  const tbody = document.getElementById('all-submissions-tbody');
+  if (!subs.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div><p>ไม่มีงาน</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = subs.map(s => {
+    const proj = state.projects.find(p => p.id === s.projectId);
+    return `<tr>
+      <td><div class="student-name">${avatarHtml(s.studentName)} ${s.studentName}</div></td>
+      <td><span style="color:var(--text2); font-size:13px">${proj?.title || '-'}</span></td>
+      <td style="font-family:'Space Mono',monospace; font-size:12px;">${formatDate(s.workDate)}</td>
+      <td style="max-width:200px; color:var(--text2); font-size:13px;">${(s.note||'').slice(0,40)}${(s.note||'').length>40?'...':''}</td>
+      <td>${thumbsHtml(s.images, 3)}</td>
+      <td><button class="view-btn" onclick="showSubmissionDetail('${s.id}')">ดู</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ========== STUDENT: DASHBOARD ==========
+function renderStudentDashboard() {
+  const myDone = state.submissions.filter(s => s.studentName === state.currentUser);
+  const openProjs = state.projects.filter(p => p.status === 'open');
+
+  document.getElementById('s-stat-open').textContent = openProjs.length;
+  document.getElementById('s-stat-done').textContent = myDone.length;
+
+  const nearest = openProjs.filter(p => p.due).sort((a,b) => new Date(a.due)-new Date(b.due))[0];
+  document.getElementById('s-stat-due').textContent = nearest ? formatDate(nearest.due) : '-';
+
+  const grid = document.getElementById('student-projects-grid');
+  if (!openProjs.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🎉</div><p>ยังไม่มีโปรเจกต์</p><span>รอครูสร้างโปรเจกต์</span></div>`;
+    return;
+  }
+
+  grid.innerHTML = openProjs.map(p => {
+    const submitted = myDone.find(s => s.projectId === p.id);
+    return `<div class="project-card" onclick="${submitted ? `showSubmissionDetail('${submitted.id}')` : `goSubmit('${p.id}')`}">
+      <div class="card-tag ${submitted ? 'tag-open' : 'tag-pending'}">${submitted ? '✅ ส่งแล้ว' : '⏳ ยังไม่ได้ส่ง'}</div>
+      <h3>${p.title}</h3>
+      <div class="desc">${p.desc || 'ไม่มีคำอธิบาย'}</div>
+      <div class="project-meta">
+        <span>📚 ${p.subject || '-'}</span>
+        ${p.due ? `<span>📅 ${formatDate(p.due)}</span>` : ''}
+      </div>
+      ${!submitted ? `<div class="btn-row" style="margin-top:12px; justify-content:flex-start;">
+        <button class="btn btn-accent" style="padding:9px 18px; font-size:13px;" onclick="event.stopPropagation(); goSubmit('${p.id}')">📤 รายงานฝึกอาชีพ</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function goSubmit(projectId) {
+  showPage('submit-work');
+  setTimeout(() => {
+    document.getElementById('submit-project').value = projectId;
+  }, 100);
+}
+
+// ========== STUDENT: SUBMIT ==========
+function renderSubmitForm() {
+  const sel = document.getElementById('submit-project');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- เลือกโปรเจกต์ --</option>' +
+    state.projects.filter(p => p.status === 'open').map(p =>
+      `<option value="${p.id}">${p.title}</option>`).join('');
+  if (cur) sel.value = cur;
+
+  // Set today's date
+  document.getElementById('submit-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('submit-student').value = state.currentUser;
+}
+
+function handleImgUpload(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      state.uploadedImgs.push({ name: f.name, data: ev.target.result });
+      renderUploadedImgs();
+    };
+    reader.readAsDataURL(f);
+  });
+  e.target.value = '';
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.add('dragging');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('dragging');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      state.uploadedImgs.push({ name: f.name, data: ev.target.result });
+      renderUploadedImgs();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function renderUploadedImgs() {
+  const el = document.getElementById('uploaded-images');
+  el.innerHTML = state.uploadedImgs.map((img, i) =>
+    `<div class="uploaded-img-wrap">
+      <img class="uploaded-img" src="${img.data}" alt="${img.name}">
+      <div class="remove-img" onclick="removeImg(${i})">✕</div>
+    </div>`
+  ).join('');
+}
+
+function removeImg(i) {
+  state.uploadedImgs.splice(i, 1);
+  renderUploadedImgs();
+}
+
+function clearSubmitForm() {
+  document.getElementById('submit-project').value = '';
+  document.getElementById('submit-note').value = '';
+  state.uploadedImgs = [];
+  renderUploadedImgs();
+}
+
+async function submitWork() {
+  const projectId = document.getElementById('submit-project').value;
+  if (!projectId) { 
+    showToast('กรุณาเลือกโปรเจกต์', 'error'); 
+    return; 
+  }
+
+  // เตรียมข้อมูลที่จะส่ง
+  const data = {
+    projectId: projectId,
+    studentName: state.currentUser,
+    workDate: document.getElementById('submit-date').value,
+    note: document.getElementById('submit-note').value.trim(),
+    images: [...state.uploadedImgs] // ส่งอาเรย์ของรูปภาพ (Base64)
+  };
+
+  try {
+    showLoading(true);
+    showToast('⏳ กำลังอัปโหลดข้อมูลและรูปภาพ...', 'info');
+
+    // ใช้ fetch แบบ POST เพื่อส่งข้อมูลขนาดใหญ่
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors', // สำคัญ: ป้องกันปัญหา CORS บน Browser บางตัว
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    });
+
+    // เนื่องจากใช้ no-cors เราจะไม่สามารถอ่าน response.json() ได้โดยตรง 
+    // แต่ข้อมูลจะถูกส่งไปถึง Apps Script แน่นอน
+    
+    // เคลียร์ฟอร์มและแสดงความยินดี
+    state.uploadedImgs = [];
+    renderUploadedImgs();
+    clearSubmitForm();
+    
+    showToast('📤 ส่งรายงานเรียบร้อยแล้ว!', 'success');
+    
+    // หน่วงเวลาเล็กน้อยก่อนกลับหน้าหลักเพื่อให้ระบบฝั่ง Apps Script บันทึกเสร็จ
+    setTimeout(() => {
+      showPage('my-submissions');
+      loadState(); // โหลดข้อมูลใหม่เพื่อให้อาจารย์เห็นงานที่เพิ่งส่ง
+    }, 1500);
+
+  } catch(e) {
+    console.error('Submit Error:', e);
+    showToast('❌ เกิดข้อผิดพลาด: ' + e.message, 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+// ========== STUDENT: MY SUBMISSIONS ==========
+function renderMySubmissions() {
+  const subs = state.submissions
+    .filter(s => s.studentName === state.currentUser)
+    .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+  const tbody = document.getElementById('my-submissions-tbody');
+  if (!subs.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📭</div><p>ยังไม่มีงานที่ส่ง</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = subs.map(s => {
+    const proj = state.projects.find(p => p.id === s.projectId);
+    return `<tr>
+      <td style="font-weight:600">${proj?.title || '-'}</td>
+      <td style="font-family:'Space Mono',monospace; font-size:12px;">${formatDate(s.workDate)}</td>
+      <td style="color:var(--text2); font-size:13px;">${(s.note||'').slice(0,50)}${(s.note||'').length>50?'...':''}</td>
+      <td>${thumbsHtml(s.images, 3)}</td>
+      <td><button class="view-btn" onclick="showSubmissionDetail('${s.id}')">ดู</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ========== MODALS ==========
+function showProjectDetail(projectId) {
+  const proj = state.projects.find(p => p.id === projectId);
+  if (!proj) return;
+
+  const subs = state.submissions.filter(s => s.projectId === projectId);
+  document.getElementById('modal-proj-title').textContent = proj.title;
+
+  document.getElementById('modal-proj-content').innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-item"><div class="d-label">วิชา</div><div class="d-value">${proj.subject || '-'}</div></div>
+      <div class="detail-item"><div class="d-label">ห้องเรียน</div><div class="d-value">${proj.classGroup || '-'}</div></div>
+      <div class="detail-item"><div class="d-label">กำหนดส่ง</div><div class="d-value">${proj.due ? formatDate(proj.due) : 'ไม่กำหนด'}</div></div>
+      <div class="detail-item"><div class="d-label">จำนวนงานที่ส่ง</div><div class="d-value">${subs.length} ชิ้น</div></div>
+    </div>
+    ${proj.desc ? `<div class="submission-note">${proj.desc}</div>` : ''}
+    <div style="display:flex; gap:10px; margin-bottom:20px;">
+      <button class="btn ${proj.status==='open'?'btn-danger':'btn-success'}" onclick="toggleProject('${proj.id}')">${proj.status==='open'?'🔴 ปิดการรับงาน':'🟢 เปิดรับงาน'}</button>
+    </div>
+    <div style="font-weight:700; margin-bottom:12px; font-size:14px;">📥 งานที่ส่งมา (${subs.length})</div>
+    ${subs.length ? subs.map(s => `
+      <div style="background:var(--surface2); border-radius:10px; padding:14px; margin-bottom:8px; cursor:pointer;" onclick="closeModal('modal-project-detail'); showSubmissionDetail('${s.id}')">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          ${avatarHtml(s.studentName)} <strong>${s.studentName}</strong>
+          <span style="font-size:11px; color:var(--text3); margin-left:auto;">${formatDate(s.workDate)}</span>
+        </div>
+        <div style="font-size:13px; color:var(--text2);">${(s.note||'').slice(0,80)}${(s.note||'').length>80?'...':''}</div>
+        ${thumbsHtml(s.images, 4)}
+      </div>`).join('') : '<div style="color:var(--text3); font-size:14px;">ยังไม่มีงานส่งมา</div>'}
+  `;
+
+  openModal('modal-project-detail');
+}
+
+async function toggleProject(projectId) {
+  const proj = state.projects.find(p => p.id === projectId);
+  if (!proj) return;
+  try {
+    showLoading(true);
+    let newStatus;
+    if (USE_LOCAL) {
+      newStatus = proj.status === 'open' ? 'closed' : 'open';
+    } else {
+      const result = await apiPost('toggleProject', { id: projectId });
+      newStatus = result.status;
+    }
+    proj.status = newStatus;
+    saveState();
+    closeModal('modal-project-detail');
+    showToast(proj.status === 'open' ? '🟢 เปิดรับงานแล้ว' : '🔴 ปิดรับงานแล้ว', 'info');
+    renderTeacherProjects();
+  } catch(e) {
+    showToast('❌ เกิดข้อผิดพลาด: ' + e.message, 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+function showSubmissionDetail(subId) {
+  const s = state.submissions.find(x => x.id === subId);
+  if (!s) return;
+  const proj = state.projects.find(p => p.id === s.projectId);
+
+  document.getElementById('modal-sub-content').innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-item"><div class="d-label">นักเรียน</div><div class="d-value" style="display:flex;align-items:center;gap:8px;">${avatarHtml(s.studentName)} ${s.studentName}</div></div>
+      <div class="detail-item"><div class="d-label">โปรเจกต์</div><div class="d-value">${proj?.title || '-'}</div></div>
+      <div class="detail-item"><div class="d-label">วันที่ทำงาน</div><div class="d-value">${formatDate(s.workDate)}</div></div>
+      <div class="detail-item"><div class="d-label">วันที่ส่ง</div><div class="d-value">${formatDateTime(s.submittedAt)}</div></div>
+    </div>
+    ${s.note ? `<div class="d-label">ข้อความ</div><div class="submission-note">${s.note}</div>` : ''}
+    ${s.images?.length ? `
+      <div class="d-label" style="margin-bottom:10px;">รูปภาพที่แนบ (${s.images.length} รูป)</div>
+      <div class="imgs-grid">
+        ${s.images.map((img,i) => `<div class="imgs-grid-item" onclick="openLightbox('${img.data}')"><img src="${img.data}" alt="img${i}"></div>`).join('')}
+      </div>` : '<div style="color:var(--text3); font-size:13px;">ไม่มีรูปภาพ</div>'}
+  `;
+  openModal('modal-submission-detail');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ========== LIGHTBOX ==========
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+// ========== HELPERS ==========
+const COLORS = ['#6c63ff','#ff6b9d','#00d4aa','#ffb347','#5eead4','#f472b6','#fb923c','#60a5fa'];
+
+function getColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % COLORS.length;
+  return COLORS[h];
+}
+
+function avatarHtml(name) {
+  return `<div class="mini-avatar" style="background: linear-gradient(135deg, ${getColor(name)}, ${getColor(name+'_')});">${name[0]?.toUpperCase()}</div>`;
+}
+
+function thumbsHtml(imgs, max) {
+  if (!imgs?.length) return '<span style="color:var(--text3); font-size:12px;">-</span>';
+  return `<div class="img-thumbs">` +
+    imgs.slice(0, max).map(img =>
+      `<div class="img-thumb" onclick="openLightbox('${img.data}')"><img src="${img.data}" style="width:100%;height:100%;object-fit:cover;" /></div>`
+    ).join('') +
+    (imgs.length > max ? `<div class="more-imgs">+${imgs.length - max}</div>` : '') +
+    `</div>`;
+}
+
+function formatDate(d) {
+  if (!d) return '-';
+  const dt = new Date(d + (d.includes('T') ? '' : 'T00:00:00'));
+  return dt.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function formatDateTime(d) {
+  if (!d) return '-';
+  return new Date(d).toLocaleString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function showToast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `<span>${type==='success'?'✅':type==='error'?'❌':'ℹ️'}</span> ${msg}`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function refreshAll() {
+  if (state.currentRole === 'teacher') {
+    renderDashboard();
+  } else {
+    renderStudentDashboard();
+  }
+}
+
+// Init
+
+</script>
+</body>
+</html>
